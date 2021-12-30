@@ -40,7 +40,7 @@ Route::middleware('verify.secret.key')->group(function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);
     });
-    Route::post('/getcount', 'WaController@getcount');
+    Route::post('/getcount', 'CustomController@getcount');
     Route::get('/getcount', function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);

@@ -24,9 +24,7 @@ class RemoveController extends Controller
         }else {
             $action = $user->delete();
             $used = WaUsed::where('full_number', $data['full_number'])->first();
-            foreach ($used as $value) {
-                $value->delete();
-            }
+            $used->delete();
             if ($action) {
                 $response = ['status'=>'success', 'message'=>'Contact has been deleted successfully', 'data'=>null];
             }else {
