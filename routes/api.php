@@ -45,4 +45,35 @@ Route::middleware('verify.secret.key')->group(function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);
     });
+    Route::post('/getpremiumstatus', 'PremiumController@getpremiumstatus');
+    Route::get('/getpremiumstatus', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
+    Route::post('/activatepremium', 'PremiumController@activatepremium');
+    Route::get('/activatepremium', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
+
+    Route::post('/activatepremium', 'PremiumController@activatepremium');
+    Route::get('/activatepremium', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
+
+    Route::post('/getallvcf', 'GetVcfController@getall');
+    Route::get('/getallvcf', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
+
+    Route::post('/fetchoutdated', 'GetVcfController@fetchoutdated');
+    Route::get('/fetchoutdated', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
+
+
+
 });

@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use App\WaUser;
 use App\WaUsed;
 use App\WaReport;
+use App\WaDeleted;
+use App\WaMarkedDelete;
 
 class CustomController extends Controller
 {
