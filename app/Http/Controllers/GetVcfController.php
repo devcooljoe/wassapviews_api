@@ -36,14 +36,14 @@ class GetVcfController extends Controller
         $user = WaUser::where('full_number', $full_number)->first();
         if ($user == null)
         {
-            $response = ['status' => 'error', 'message' => 'This number has not been submitted. Submit this contact first', 'data' => null];
+            $response = ['status' => 'submit', 'message' => 'Your number has not been submitted. Tap on Submit Contact to submit this contact first', 'data' => null];
             return json_encode($response);
         }
 
         $user_used = WaUsed::where('full_number', $full_number)->first();
         if ($user_used == null)
         {
-            $last_id = 0;
+            $last_id = WaUser::all()->count() - 100;
         }
         else
         {
@@ -51,7 +51,7 @@ class GetVcfController extends Controller
             $fetched_user = WaUser::where('full_number', $last_fetched)->first();
             if ($fetched_user == null)
             {
-                $last_id = 0;
+                $last_id = WaUser::all()->count() - 100;
             }
             else
             {
@@ -74,14 +74,17 @@ class GetVcfController extends Controller
             $str = '';
             foreach ($unfetched as $user)
             {
-                array_push($arr, $user->full_number);
-                // Create the VCF file. Do not add any tab or space in the structure below. Should be left that way.
-                $str .= 'BEGIN:VCARD
+                if ($user->country_code == $country_code)
+                {
+                    array_push($arr, $user->full_number);
+                    // Create the VCF file. Do not add any tab or space in the structure below. Should be left that way.
+                    $str .= 'BEGIN:VCARD
 VERSION:2.1
 FN:' . $user->name . '
 TEL;CELL:' . $user->full_number . '
 END:VCARD
 ';
+                }
             }
 
             $last_num = end($arr);
@@ -138,12 +141,15 @@ END:VCARD
         foreach ($unfetched as $user)
         {
             // Create the VCF file. Do not add any tab or space in the structure below. Should be left that way.
-            $str .= 'BEGIN:VCARD
+            if ($user->country_code == $country_code)
+            {
+                $str .= 'BEGIN:VCARD
 VERSION:2.1
 FN:' . $user->name . '
 TEL;CELL:' . $user->full_number . '
 END:VCARD
 ';
+            }
         }
         // Write to the VCF file
         $file = fopen('vcf/' . $file_name, 'w+');
@@ -155,8 +161,7 @@ END:VCARD
         return json_encode($response);
     }
 
-
-    public function fetchoutdated() 
+    public function fetchoutdated()
     {
         $data = request()->validate(['country_code' => [], 'number' => [], ]);
 
@@ -165,29 +170,142 @@ END:VCARD
         @$full_number = $country_code . $number;
 
         $last_marked = WaMarkedDelete::where('full_number', $full_number)->first();
-        if ($last_marked == null) {
+        if ($last_marked == null)
+        {
             $last_id = 0;
-        }else {
+        }
+        else
+        {
             $last_id = $last_marked->deleted_id;
         }
         $deleted_users = WaDeleted::orderBy('id', 'ASC')->where('id', '>', $last_id)->get();
         $count = $deleted_users->count();
-        if ($count > 0) {
+        if ($count > 0)
+        {
             $phones = [];
-            foreach ($deleted_users as $user) {
+            foreach ($deleted_users as $user)
+            {
                 array_push($phones, $user->full_number);
             }
-            if ($last_marked == null) {
-                WaMarkedDelete::create(['full_number'=>$full_number, 'deleted_id'=>$last_id+$count]);
-            }else {
-                $last_marked->update(['deleted_id'=>$last_deleted_user->id]);
+            if ($last_marked == null)
+            {
+                WaMarkedDelete::create(['full_number' => $full_number, 'deleted_id' => $last_id + $count]);
             }
-            $response = ['status' => 'success', 'message' => 'Contacts requested successfully', 'data' => $phones,];
+            else
+            {
+                $last_marked->update(['deleted_id' => $last_deleted_user->id]);
+            }
+            $response = ['status' => 'success', 'message' => 'Contacts requested successfully', 'data' => $phones, ];
             return json_encode($response);
-        } else {
+        }
+        else
+        {
             $response = ['status' => 'error', 'message' => 'No outdated contacts for now'];
             return json_encode($response);
         }
+    }
+    
+    
+    public function getsinglevcf($date)
+    {
+        
+        $matched_users = WaUser::where('created_at', 'LIKE', '%' . $date . '%')->get();
+        $str = '';
+        foreach ($matched_users as $user)
+        {
+
+            $str .= 'BEGIN:VCARD
+VERSION:2.1
+FN:' . $user->name . '
+TEL;CELL:' . $user->full_number . '
+END:VCARD
+';
+        }
+        $file_name = date('d-m-Y') . '-' . uniqid() . ".vcf";
+        $file = fopen('vcf/' . $file_name, 'w+');
+        fwrite($file, $str);
+        fclose($file);
+        
+        $response = ['status' => 'success', 'message' => 'VCF file requested successfully', 'data' => ['path' => route('index') . '/vcf/' . $file_name, 'file_name' => $file_name, ], ];
+        return json_encode($response);
+    }
+    
+    
+    public function get2kvcf()
+    {
+        $data = request()->validate(['country_code' => [], 'number' => [], 'index' => [],]);
+
+        @$country_code = $data['country_code'];
+        @$number = $data['number'];
+        @$full_number = $country_code . $number;
+        @$index = $data['index'];
+        
+        $matched_users = WaUser::skip($index*2000)->take(2000)->get();
+        $str = '';
+        foreach ($matched_users as $user)
+        {
+
+            $str .= 'BEGIN:VCARD
+VERSION:2.1
+FN:' . $user->name . '
+TEL;CELL:' . $user->full_number . '
+END:VCARD
+';
+        }
+        $file_name = date('d-m-Y') . '-' . uniqid() . ".vcf";
+        $file = fopen('vcf/' . $file_name, 'w+');
+        fwrite($file, $str);
+        fclose($file);
+        
+        $response = ['status' => 'success', 'message' => 'VCF file requested successfully', 'data' => ['path' => route('index') . '/vcf/' . $file_name, 'file_name' => $file_name, ], ];
+        return json_encode($response);
+    }
+    
+    
+    
+    
+    public function getsinglevcfmain()
+    {
+        $data = request()->validate(['country_code' => [], 'number' => [], 'date' => []]);
+
+        @$country_code = $data['country_code'];
+        @$number = $data['number'];
+        @$full_number = $country_code . $number;
+        @$date = $data['date'];
+        
+        $check = WaReport::where('full_number', $full_number)->get();
+        if ($check->count() >= 5)
+        {
+            $response = ['status' => 'error', 'message' => 'This account has been banned', 'data' => null];
+            return json_encode($response);
+        }
+
+        $user = WaUser::where('full_number', $full_number)->first();
+        if ($user == null)
+        {
+            $response = ['status' => 'submit', 'message' => 'Your number has not been submitted. Tap on Submit Contact to submit this contact first', 'data' => null];
+            return json_encode($response);
+        }
+        
+        $matched_users = WaUser::where('created_at', 'LIKE', '%' . $date . '%')->get();
+        $str = '';
+        foreach ($matched_users as $user)
+        {
+
+            $str .= 'BEGIN:VCARD
+VERSION:2.1
+FN:' . $user->name . '
+TEL;CELL:' . $user->full_number . '
+END:VCARD
+';
+        }
+        $file_name = date('d-m-Y') . '-' . uniqid() . ".vcf";
+        $file = fopen('vcf/' . $file_name, 'w+');
+        fwrite($file, $str);
+        fclose($file);
+        
+        $response = ['status' => 'success', 'message' => 'VCF file requested successfully', 'data' => ['path' => route('index') . '/vcf/' . $file_name, 'file_name' => $file_name, ], ];
+        return json_encode($response);
     }
 }
 

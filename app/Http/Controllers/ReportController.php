@@ -40,6 +40,7 @@ class ReportController extends Controller
             if ($check_report->count() >= 5)
             {
                 $checked_user->update(['status' => 'banned', ]);
+                WaDeleted::create(['full_number'=>$data['full_number']]);
             }
 
             if ($action)

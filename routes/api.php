@@ -45,6 +45,11 @@ Route::middleware('verify.secret.key')->group(function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);
     });
+    Route::post('/gettotalcount', 'CustomController@gettotalcount');
+    Route::get('/gettotalcount', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
     Route::post('/getpremiumstatus', 'PremiumController@getpremiumstatus');
     Route::get('/getpremiumstatus', function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
@@ -67,12 +72,24 @@ Route::middleware('verify.secret.key')->group(function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);
     });
+    
+    Route::post('/get2kvcf', 'GetVcfController@get2kvcf');
+    Route::get('/get2kvcf', function() {
+        $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
+        return json_encode($response);
+    });
 
     Route::post('/fetchoutdated', 'GetVcfController@fetchoutdated');
     Route::get('/fetchoutdated', function() {
         $response = ['status'=>'error', 'message'=>'Get request is not supported for this route', 'data'=>null];
         return json_encode($response);
     });
+    
+    Route::get('/getads', 'CustomController@getads');
+    
+    Route::post('/getsinglevcf', 'GetVcfController@getsinglevcfmain');
+    
+    Route::get('/getsinglevcf/{date}', 'GetVcfController@getsinglevcf');
 
 
 

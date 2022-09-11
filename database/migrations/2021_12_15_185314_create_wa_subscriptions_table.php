@@ -16,7 +16,7 @@ class CreateWaSubscriptionsTable extends Migration
         Schema::create('wa_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('wa_user_id');
-            $table->string('plan'); 
+            $table->string('plan');
             $table->string('start');
             $table->string('end');
             $table->timestamps();

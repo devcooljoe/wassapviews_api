@@ -69,7 +69,7 @@ class PremiumController extends Controller
         $user = WaUser::where('full_number', $full_number)->first();
         if ($user == null)
         {
-            $response = ['status' => 'success', 'message' => 'Subscription status fetched successfully.', 'data' => ['plan' => 'none', 'status' => 'none', ], ];
+            $response = ['status' => 'success', 'message' => 'Subscription status fetched successfully.', 'data' => ['plan' => 'none', 'status' => 'none', 'end'=>'none'], ];
             return json_encode($response);
         }
         $sub = WaSubscription::where('wa_user_id', $user->id)
